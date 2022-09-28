@@ -43,8 +43,8 @@ def applyQuaternionRotation():
     quaternion.plot3D(x, y, z, 'red')
 
 def applyRotation():
-    print('vx %.3f, vy %.3f, vz %.3f' % (vx, vy, vz), end=', ')
-    print('alpha %03d, beta %03d, gamma %03d' % (alpha, beta, gamma))
+    print('vx %7.3f, vy %7.3f, vz %7.3f' % (vx, vy, vz), end=', ')
+    print('alpha %3d, beta %3d, gamma %3d' % (alpha, beta, gamma))
     applyEulerRotation()
     applyQuaternionRotation()
     plt.draw() # Update plots.
