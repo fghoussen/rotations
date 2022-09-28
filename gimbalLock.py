@@ -8,9 +8,16 @@ from matplotlib.widgets import Slider, TextBox
 # Create 3-D axis.
 fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 euler, quaternion = axis
+def initAxis(axis):
+    # Show cartesian axes.
+    axis.quiver(-1.,  0.,  0., 2., 0., 0., color='gray', linestyle='dashed')
+    axis.quiver( 0., -1.,  0., 0., 2., 0., color='gray', linestyle='dashed')
+    axis.quiver( 0.,  0., -1., 0., 0., 2., color='gray', linestyle='dashed')
+    # Vector before rotation
+    axis.quiver(0., 0., 0., vx, vy, vz, color='b')
 
 # Apply rotation.
-vx, vy, vz, alpha, beta, gamma = 1., 0., 0., 45, 45, 45
+vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 45, 45, 45
 def applyEulerRotation():
     # Defining all 3 axes.
     z = np.linspace(0, 1, 100)
@@ -20,6 +27,7 @@ def applyEulerRotation():
     # Plotting.
     euler.clear() # Reset plot.
     euler.set_title('Euler rotation')
+    initAxis(euler)
     euler.plot3D(x, y, z, 'green')
 
 def applyQuaternionRotation():
@@ -31,6 +39,7 @@ def applyQuaternionRotation():
     # Plotting.
     quaternion.clear() # Reset plot.
     quaternion.set_title('Quaternion rotation')
+    initAxis(quaternion)
     quaternion.plot3D(x, y, z, 'red')
 
 def applyRotation():
