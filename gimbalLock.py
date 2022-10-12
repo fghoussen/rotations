@@ -10,15 +10,30 @@ from matplotlib.widgets import Slider, TextBox
 fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 euler, quaternion = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
+vectorChanged, eulerLim = True, None
 
-# Create 3-D axis.
+# Update 3-D axis.
 def initAxis(axis):
     # Show cartesian axes.
+    axis.clear() # Reset plot.
     axis.quiver(-1.,  0.,  0., 2., 0., 0., color='gray', linestyle='dashed')
     axis.quiver( 0., -1.,  0., 0., 2., 0., color='gray', linestyle='dashed')
     axis.quiver( 0.,  0., -1., 0., 0., 2., color='gray', linestyle='dashed')
     # Vector before rotation
     axis.quiver(0., 0., 0., vx, vy, vz, color='b')
+def setAxisLim(axis, W, axisLim):
+    # Set axis limits.
+    global vectorChanged
+    if vectorChanged: # Fit limits to new data.
+        normW, coef = np.linalg.norm(W), 1.1
+        axis.set_xlim3d(-coef*normW, coef*normW)
+        axis.set_ylim3d(-coef*normW, coef*normW)
+        axis.set_zlim3d(-coef*normW, coef*normW)
+        vectorChanged = False
+    else: # Preserve previous setup.
+        axis.set_xlim3d(axisLim[0])
+        axis.set_ylim3d(axisLim[1])
+        axis.set_zlim3d(axisLim[2])
 
 # Apply rotation.
 def applyEulerRotation():
@@ -39,15 +54,11 @@ def applyEulerRotation():
     W = Rx@Ry@Rz@V
 
     # Plotting.
-    euler.clear() # Reset plot.
-    euler.set_title('Euler rotation')
+    eulerLim = (euler.get_xlim3d(), euler.get_ylim3d(), euler.get_zlim3d())
     initAxis(euler)
     euler.quiver(0., 0., 0., W[0], W[1], W[2], color='g')
-    normW, coef = np.linalg.norm(W), 1.1
-    euler.set_xlim3d(-coef*normW, coef*normW)
-    euler.set_ylim3d(-coef*normW, coef*normW)
-    euler.set_zlim3d(-coef*normW, coef*normW)
-
+    setAxisLim(euler, W, eulerLim)
+    euler.set_title('Euler rotation')
 def applyQuaternionRotation():
     # Defining all 3 axes.
     z = np.linspace(0, 1, 100)
@@ -55,11 +66,9 @@ def applyQuaternionRotation():
     y = z * np.cos(25 * z + gamma)
 
     # Plotting.
-    quaternion.clear() # Reset plot.
-    quaternion.set_title('Quaternion rotation')
     initAxis(quaternion)
     quaternion.plot3D(x, y, z, 'red')
-
+    quaternion.set_title('Quaternion rotation')
 def applyRotation():
     print('vx %7.3f, vy %7.3f, vz %7.3f' % (vx, vy, vz), end=', ')
     print('alpha %3d, beta %3d, gamma %3d' % (alpha, beta, gamma))
@@ -69,23 +78,26 @@ def applyRotation():
 
 # Callback on GUI widgets.
 def applyVx(val):
-    global vx
+    global vx, vectorChanged
     try:
         vx = float(val)
+        vectorChanged = True
     except:
         return
     applyRotation()
 def applyVy(val):
-    global vy
+    global vy, vectorChanged
     try:
         vy = float(val)
+        vectorChanged = True
     except:
         return
     applyRotation()
 def applyVz(val):
-    global vz
+    global vz, vectorChanged
     try:
         vz = float(val)
+        vectorChanged = True
     except:
         return
     applyRotation()
