@@ -105,15 +105,15 @@ def main():
     # Make horizontal sliders to control the angles.
     axisSliderRx = fig.add_axes([0.6, 0.09, 0.3, 0.05])
     sliderRx = Slider(ax=axisSliderRx, label='alpha (Rx) [°]',
-                      valmin=0, valmax=360, valinit=alpha, valfmt='%i', valstep=1)
+                      valmin=-180, valmax=180, valinit=alpha, valfmt='%i', valstep=5)
     sliderRx.on_changed(applyRx)
     axisSliderRy = fig.add_axes([0.6, 0.06, 0.3, 0.05])
     sliderRy = Slider(ax=axisSliderRy, label='beta (Ry) [°]',
-                      valmin=0, valmax=360, valinit=beta, valfmt='%i', valstep=1)
+                      valmin=-180, valmax=180, valinit=beta, valfmt='%i', valstep=5)
     sliderRy.on_changed(applyRy)
     axisSliderRz = fig.add_axes([0.6, 0.03, 0.3, 0.05])
     sliderRz = Slider(ax=axisSliderRz, label='gamma (Rz) [°]',
-                      valmin=0, valmax=360, valinit=gamma, valfmt='%i', valstep=1)
+                      valmin=-180, valmax=180, valinit=gamma, valfmt='%i', valstep=5)
     sliderRz.on_changed(applyRz)
 
     # Show plots.
