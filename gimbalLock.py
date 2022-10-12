@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 from matplotlib.widgets import Slider, TextBox
@@ -21,16 +22,31 @@ def initAxis(axis):
 
 # Apply rotation.
 def applyEulerRotation():
-    # Defining all 3 axes.
-    z = np.linspace(0, 1, 100)
-    x = z * np.sin(25 * z + alpha)
-    y = z * np.cos(25 * z + beta)
+    # Rotate vector.
+    theta = np.deg2rad(alpha)
+    Rx = np.array([[ 1.,              0.,               0.],
+                   [ 0., math.cos(theta), -math.sin(theta)],
+                   [ 0., math.sin(theta),  math.cos(theta)]])
+    theta = np.deg2rad(beta)
+    Ry = np.array([[  math.cos(theta), 0., math.sin(theta)],
+                   [               0., 1.,              0.],
+                   [ -math.sin(theta), 0., math.cos(theta)]])
+    theta = np.deg2rad(gamma)
+    Rz = np.array([[  math.cos(theta), -math.sin(theta), 0.],
+                   [  math.sin(theta),  math.cos(theta), 0.],
+                   [               0.,               0., 1.]])
+    V = np.array([[vx], [vy], [vz]])
+    W = Rx@Ry@Rz@V
 
     # Plotting.
     euler.clear() # Reset plot.
     euler.set_title('Euler rotation')
     initAxis(euler)
-    euler.plot3D(x, y, z, 'green')
+    euler.quiver(0., 0., 0., W[0], W[1], W[2], color='g')
+    normW, coef = np.linalg.norm(W), 1.1
+    euler.set_xlim3d(-coef*normW, coef*normW)
+    euler.set_ylim3d(-coef*normW, coef*normW)
+    euler.set_zlim3d(-coef*normW, coef*normW)
 
 def applyQuaternionRotation():
     # Defining all 3 axes.
