@@ -5,9 +5,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 from matplotlib.widgets import Slider, TextBox
 
-# Create 3-D axis.
+# Global variables.
 fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 euler, quaternion = axis
+vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
+
+# Create 3-D axis.
 def initAxis(axis):
     # Show cartesian axes.
     axis.quiver(-1.,  0.,  0., 2., 0., 0., color='gray', linestyle='dashed')
@@ -17,7 +20,6 @@ def initAxis(axis):
     axis.quiver(0., 0., 0., vx, vy, vz, color='b')
 
 # Apply rotation.
-vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 45, 45, 45
 def applyEulerRotation():
     # Defining all 3 axes.
     z = np.linspace(0, 1, 100)
