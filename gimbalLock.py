@@ -20,7 +20,7 @@ def initAxis(axis):
     axis.quiver( 0., -1.,  0., 0., 2., 0., color='gray', linestyle='dashed')
     axis.quiver( 0.,  0., -1., 0., 0., 2., color='gray', linestyle='dashed')
     # Vector before rotation
-    axis.quiver(0., 0., 0., vx, vy, vz, color='b')
+    axis.quiver(0., 0., 0., vx, vy, vz, color='orange', linestyle='dashed')
 def setAxisLim(axis, W, axisLim):
     # Set axis limits.
     global vectorChanged
@@ -56,7 +56,7 @@ def applyEulerRotation():
     # Plotting.
     eulerLim = (euler.get_xlim3d(), euler.get_ylim3d(), euler.get_zlim3d())
     initAxis(euler)
-    euler.quiver(0., 0., 0., W[0], W[1], W[2], color='g')
+    euler.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
     setAxisLim(euler, W, eulerLim)
     euler.set_title('Euler rotation')
 def applyQuaternionRotation():
@@ -67,7 +67,7 @@ def applyQuaternionRotation():
 
     # Plotting.
     initAxis(quaternion)
-    quaternion.plot3D(x, y, z, 'red')
+    quaternion.plot3D(x, y, z, 'orange')
     quaternion.set_title('Quaternion rotation')
 def applyRotation():
     print('vx %7.3f, vy %7.3f, vz %7.3f' % (vx, vy, vz), end=', ')
