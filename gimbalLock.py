@@ -7,12 +7,42 @@ from mpl_toolkits import mplot3d
 from matplotlib.widgets import Slider, TextBox
 
 # Global variables.
+
 fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 euler, quaternion = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
 vectorChanged, eulerLim = True, None
 
+# Define transformations.
+
+class eulerTransform:
+
+    @staticmethod
+    def getRx(alpha):
+        theta = np.deg2rad(alpha)
+        Rx = np.array([[ 1.,              0.,               0.],
+                       [ 0., math.cos(theta), -math.sin(theta)],
+                       [ 0., math.sin(theta),  math.cos(theta)]])
+        return Rx
+
+    @staticmethod
+    def getRy(beta):
+        theta = np.deg2rad(beta)
+        Ry = np.array([[  math.cos(theta), 0., math.sin(theta)],
+                       [               0., 1.,              0.],
+                       [ -math.sin(theta), 0., math.cos(theta)]])
+        return Ry
+
+    @staticmethod
+    def getRz(gamma):
+        theta = np.deg2rad(gamma)
+        Rz = np.array([[  math.cos(theta), -math.sin(theta), 0.],
+                       [  math.sin(theta),  math.cos(theta), 0.],
+                       [               0.,               0., 1.]])
+        return Rz
+
 # Update 3-D axis.
+
 def initAxis(axis):
     # Show cartesian axes.
     axis.clear() # Reset plot.
@@ -21,6 +51,7 @@ def initAxis(axis):
     axis.quiver( 0.,  0., -1., 0., 0., 2., color='gray', linestyle='dashed')
     # Vector before rotation
     axis.quiver(0., 0., 0., vx, vy, vz, color='orange', linestyle='dashed')
+
 def setAxisLim(axis, W, axisLim):
     # Set axis limits.
     global vectorChanged
@@ -36,20 +67,11 @@ def setAxisLim(axis, W, axisLim):
         axis.set_zlim3d(axisLim[2])
 
 # Apply rotation.
+
 def applyEulerRotation():
     # Rotate vector.
-    theta = np.deg2rad(alpha)
-    Rx = np.array([[ 1.,              0.,               0.],
-                   [ 0., math.cos(theta), -math.sin(theta)],
-                   [ 0., math.sin(theta),  math.cos(theta)]])
-    theta = np.deg2rad(beta)
-    Ry = np.array([[  math.cos(theta), 0., math.sin(theta)],
-                   [               0., 1.,              0.],
-                   [ -math.sin(theta), 0., math.cos(theta)]])
-    theta = np.deg2rad(gamma)
-    Rz = np.array([[  math.cos(theta), -math.sin(theta), 0.],
-                   [  math.sin(theta),  math.cos(theta), 0.],
-                   [               0.,               0., 1.]])
+    trf = eulerTransform()
+    Rx, Ry, Rz = trf.getRx(alpha), trf.getRy(beta), trf.getRz(gamma)
     V = np.array([[vx], [vy], [vz]])
     W = Rx@Ry@Rz@V
 
@@ -59,6 +81,7 @@ def applyEulerRotation():
     euler.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
     setAxisLim(euler, W, eulerLim)
     euler.set_title('Euler rotation')
+
 def applyQuaternionRotation():
     # Defining all 3 axes.
     z = np.linspace(0, 1, 100)
@@ -69,6 +92,7 @@ def applyQuaternionRotation():
     initAxis(quaternion)
     quaternion.plot3D(x, y, z, 'orange')
     quaternion.set_title('Quaternion rotation')
+
 def applyRotation():
     print('vx %7.3f, vy %7.3f, vz %7.3f' % (vx, vy, vz), end=', ')
     print('alpha %3d, beta %3d, gamma %3d' % (alpha, beta, gamma))
@@ -77,6 +101,7 @@ def applyRotation():
     plt.draw() # Update plots.
 
 # Callback on GUI widgets.
+
 def applyVx(val):
     global vx, vectorChanged
     try:
@@ -85,6 +110,7 @@ def applyVx(val):
     except:
         return
     applyRotation()
+
 def applyVy(val):
     global vy, vectorChanged
     try:
@@ -93,6 +119,7 @@ def applyVy(val):
     except:
         return
     applyRotation()
+
 def applyVz(val):
     global vz, vectorChanged
     try:
@@ -101,20 +128,24 @@ def applyVz(val):
     except:
         return
     applyRotation()
+
 def applyRx(val):
     global alpha
     alpha = val
     applyRotation()
+
 def applyRy(val):
     global beta
     beta = val
     applyRotation()
+
 def applyRz(val):
     global gamma
     gamma = val
     applyRotation()
 
 # Main function.
+
 def main():
     # Make textbox to initialize vector to rotate.
     axisLabelVx = fig.add_axes([0.1, 0.09, 0.3, 0.03])
@@ -148,5 +179,6 @@ def main():
     plt.show()
 
 # Python script entry point.
+
 if __name__ == "__main__":
     main()
