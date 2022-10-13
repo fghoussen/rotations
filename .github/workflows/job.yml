@@ -1,0 +1,13 @@
+name: test suite
+on: [push]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install python modules
+        run: pip install matplotlib numpy
+      - name: Test
+        run: python3 tst.py
+
