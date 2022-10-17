@@ -12,7 +12,7 @@ fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 eAxis, qAxis = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
 chkBtn, sameView, sameLim = None, True, True
-vectorChanged, eLim, quaternionLim = True, None, None
+vectorChanged, eLim, qLim = True, None, None
 
 # Define transformations.
 
@@ -171,11 +171,11 @@ def applyQuaternionRotation(V, angles):
     print('Quaternion rotation: W = (%.3f, %.3f, %.3f), ||W|| = %.6f' % data)
 
     # Plotting.
-    global quaternionLim
-    quaternionLim = (qAxis.get_xlim3d(), qAxis.get_ylim3d(), qAxis.get_zlim3d())
+    global qLim
+    qLim = (qAxis.get_xlim3d(), qAxis.get_ylim3d(), qAxis.get_zlim3d())
     initAxis(qAxis)
     qAxis.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
-    setAxisLim(qAxis, W, quaternionLim)
+    setAxisLim(qAxis, W, qLim)
     qAxis.set_title('Quaternion rotation')
 
     return W
@@ -248,7 +248,7 @@ def onChkBtnChange(label):
         sameLim = chkBtn.get_status()[1]
 
 def onMove(event):
-    global eAxis, qAxis, eLim, quaternionLim
+    global eAxis, qAxis, eLim, qLim
     if event.inaxes is not None:
         if sameView:
             if event.inaxes == eAxis:
@@ -257,16 +257,12 @@ def onMove(event):
                 eAxis.view_init(qAxis.elev, qAxis.azim)
         if sameLim:
             if event.inaxes == eAxis:
-                eLim = (eAxis.get_xlim3d(),
-                        eAxis.get_ylim3d(),
-                        eAxis.get_zlim3d())
-                quaternionLim = eLim
-                setAxisLim(qAxis, None, quaternionLim)
+                eLim = (eAxis.get_xlim3d(), eAxis.get_ylim3d(), eAxis.get_zlim3d())
+                qLim = eLim
+                setAxisLim(qAxis, None, qLim)
             if event.inaxes == qAxis:
-                quaternionLim = (qAxis.get_xlim3d(),
-                                 qAxis.get_ylim3d(),
-                                 qAxis.get_zlim3d())
-                eLim = quaternionLim
+                qLim = (qAxis.get_xlim3d(), qAxis.get_ylim3d(), qAxis.get_zlim3d())
+                eLim = qLim
                 setAxisLim(eAxis, None, eLim)
         plt.draw() # Update plots.
 
