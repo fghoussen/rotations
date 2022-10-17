@@ -12,7 +12,7 @@ fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 eAxis, quaternion = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
 chkBtn, sameView, sameLim = None, True, True
-vectorChanged, eulerLim, quaternionLim = True, None, None
+vectorChanged, eLim, quaternionLim = True, None, None
 
 # Define transformations.
 
@@ -144,11 +144,11 @@ def applyEulerRotation(V, angles):
     print('Euler rotation:      W = (%.3f, %.3f, %.3f), ||W|| = %.6f' % data)
 
     # Plotting.
-    global eulerLim
-    eulerLim = (eAxis.get_xlim3d(), eAxis.get_ylim3d(), eAxis.get_zlim3d())
+    global eLim
+    eLim = (eAxis.get_xlim3d(), eAxis.get_ylim3d(), eAxis.get_zlim3d())
     initAxis(eAxis)
     eAxis.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
-    setAxisLim(eAxis, W, eulerLim)
+    setAxisLim(eAxis, W, eLim)
     eAxis.set_title('Euler rotation')
 
     return W
@@ -248,7 +248,7 @@ def onChkBtnChange(label):
         sameLim = chkBtn.get_status()[1]
 
 def onMove(event):
-    global eAxis, quaternion, eulerLim, quaternionLim
+    global eAxis, quaternion, eLim, quaternionLim
     if event.inaxes is not None:
         if sameView:
             if event.inaxes == eAxis:
@@ -257,17 +257,17 @@ def onMove(event):
                 eAxis.view_init(quaternion.elev, quaternion.azim)
         if sameLim:
             if event.inaxes == eAxis:
-                eulerLim = (eAxis.get_xlim3d(),
-                            eAxis.get_ylim3d(),
-                            eAxis.get_zlim3d())
-                quaternionLim = eulerLim
+                eLim = (eAxis.get_xlim3d(),
+                        eAxis.get_ylim3d(),
+                        eAxis.get_zlim3d())
+                quaternionLim = eLim
                 setAxisLim(quaternion, None, quaternionLim)
             if event.inaxes == quaternion:
                 quaternionLim = (quaternion.get_xlim3d(),
                                  quaternion.get_ylim3d(),
                                  quaternion.get_zlim3d())
-                eulerLim = quaternionLim
-                setAxisLim(eAxis, None, eulerLim)
+                eLim = quaternionLim
+                setAxisLim(eAxis, None, eLim)
         plt.draw() # Update plots.
 
 # Main function.
