@@ -9,7 +9,7 @@ from matplotlib.widgets import Slider, TextBox, CheckButtons
 # Global variables.
 
 fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
-euler, quaternion = axis
+eAxis, quaternion = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
 chkBtn, sameView, sameLim = None, True, True
 vectorChanged, eulerLim, quaternionLim = True, None, None
@@ -145,11 +145,11 @@ def applyEulerRotation(V, angles):
 
     # Plotting.
     global eulerLim
-    eulerLim = (euler.get_xlim3d(), euler.get_ylim3d(), euler.get_zlim3d())
-    initAxis(euler)
-    euler.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
-    setAxisLim(euler, W, eulerLim)
-    euler.set_title('Euler rotation')
+    eulerLim = (eAxis.get_xlim3d(), eAxis.get_ylim3d(), eAxis.get_zlim3d())
+    initAxis(eAxis)
+    eAxis.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
+    setAxisLim(eAxis, W, eulerLim)
+    eAxis.set_title('Euler rotation')
 
     return W
 
@@ -248,18 +248,18 @@ def onChkBtnChange(label):
         sameLim = chkBtn.get_status()[1]
 
 def onMove(event):
-    global euler, quaternion, eulerLim, quaternionLim
+    global eAxis, quaternion, eulerLim, quaternionLim
     if event.inaxes is not None:
         if sameView:
-            if event.inaxes == euler:
-                quaternion.view_init(euler.elev, euler.azim)
+            if event.inaxes == eAxis:
+                quaternion.view_init(eAxis.elev, eAxis.azim)
             if event.inaxes == quaternion:
-                euler.view_init(quaternion.elev, quaternion.azim)
+                eAxis.view_init(quaternion.elev, quaternion.azim)
         if sameLim:
-            if event.inaxes == euler:
-                eulerLim = (euler.get_xlim3d(),
-                            euler.get_ylim3d(),
-                            euler.get_zlim3d())
+            if event.inaxes == eAxis:
+                eulerLim = (eAxis.get_xlim3d(),
+                            eAxis.get_ylim3d(),
+                            eAxis.get_zlim3d())
                 quaternionLim = eulerLim
                 setAxisLim(quaternion, None, quaternionLim)
             if event.inaxes == quaternion:
@@ -267,7 +267,7 @@ def onMove(event):
                                  quaternion.get_ylim3d(),
                                  quaternion.get_zlim3d())
                 eulerLim = quaternionLim
-                setAxisLim(euler, None, eulerLim)
+                setAxisLim(eAxis, None, eulerLim)
         plt.draw() # Update plots.
 
 # Main function.
