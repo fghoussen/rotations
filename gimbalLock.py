@@ -12,7 +12,7 @@ fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 eAxis, qAxis = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
 chkBtn, sameView, sameLim = None, True, True
-vectorChanged, eLim, qLim = True, None, None
+vChange, eLim, qLim = True, None, None
 
 # Define transformations.
 
@@ -118,7 +118,7 @@ def initAxis(axis):
 
 def setAxisLim(axis, W, axisLim):
     # Set axis limits.
-    if W is not None and vectorChanged: # Fit limits to new data.
+    if W is not None and vChange: # Fit limits to new data.
         norm, coef = np.linalg.norm(W), 1.1
         axis.set_xlim3d(-coef*norm, coef*norm)
         axis.set_ylim3d(-coef*norm, coef*norm)
@@ -192,34 +192,34 @@ def applyRotation():
     data = (D[0], D[1], D[2], np.linalg.norm(D))
     print('Difference:          D = (%.3f, %.3f, %.3f), ||D|| = %.6f' % data)
     print('')
-    vectorChanged = False
+    vChange = False
     plt.draw() # Update plots.
 
 # Callback on GUI widgets.
 
 def applyVx(val):
-    global vx, vectorChanged
+    global vx, vChange
     try:
         vx = float(val)
-        vectorChanged = True
+        vChange = True
     except:
         return
     applyRotation()
 
 def applyVy(val):
-    global vy, vectorChanged
+    global vy, vChange
     try:
         vy = float(val)
-        vectorChanged = True
+        vChange = True
     except:
         return
     applyRotation()
 
 def applyVz(val):
-    global vz, vectorChanged
+    global vz, vChange
     try:
         vz = float(val)
-        vectorChanged = True
+        vChange = True
     except:
         return
     applyRotation()
