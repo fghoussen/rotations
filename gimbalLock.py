@@ -9,7 +9,7 @@ from matplotlib.widgets import Slider, TextBox, CheckButtons
 # Global variables.
 
 fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
-eAxis, quaternion = axis
+eAxis, qAxis = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
 chkBtn, sameView, sameLim = None, True, True
 vectorChanged, eLim, quaternionLim = True, None, None
@@ -172,11 +172,11 @@ def applyQuaternionRotation(V, angles):
 
     # Plotting.
     global quaternionLim
-    quaternionLim = (quaternion.get_xlim3d(), quaternion.get_ylim3d(), quaternion.get_zlim3d())
-    initAxis(quaternion)
-    quaternion.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
-    setAxisLim(quaternion, W, quaternionLim)
-    quaternion.set_title('Quaternion rotation')
+    quaternionLim = (qAxis.get_xlim3d(), qAxis.get_ylim3d(), qAxis.get_zlim3d())
+    initAxis(qAxis)
+    qAxis.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
+    setAxisLim(qAxis, W, quaternionLim)
+    qAxis.set_title('Quaternion rotation')
 
     return W
 
@@ -248,24 +248,24 @@ def onChkBtnChange(label):
         sameLim = chkBtn.get_status()[1]
 
 def onMove(event):
-    global eAxis, quaternion, eLim, quaternionLim
+    global eAxis, qAxis, eLim, quaternionLim
     if event.inaxes is not None:
         if sameView:
             if event.inaxes == eAxis:
-                quaternion.view_init(eAxis.elev, eAxis.azim)
-            if event.inaxes == quaternion:
-                eAxis.view_init(quaternion.elev, quaternion.azim)
+                qAxis.view_init(eAxis.elev, eAxis.azim)
+            if event.inaxes == qAxis:
+                eAxis.view_init(qAxis.elev, qAxis.azim)
         if sameLim:
             if event.inaxes == eAxis:
                 eLim = (eAxis.get_xlim3d(),
                         eAxis.get_ylim3d(),
                         eAxis.get_zlim3d())
                 quaternionLim = eLim
-                setAxisLim(quaternion, None, quaternionLim)
-            if event.inaxes == quaternion:
-                quaternionLim = (quaternion.get_xlim3d(),
-                                 quaternion.get_ylim3d(),
-                                 quaternion.get_zlim3d())
+                setAxisLim(qAxis, None, quaternionLim)
+            if event.inaxes == qAxis:
+                quaternionLim = (qAxis.get_xlim3d(),
+                                 qAxis.get_ylim3d(),
+                                 qAxis.get_zlim3d())
                 eLim = quaternionLim
                 setAxisLim(eAxis, None, eLim)
         plt.draw() # Update plots.
