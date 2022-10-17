@@ -4,13 +4,14 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
-from matplotlib.widgets import Slider, TextBox
+from matplotlib.widgets import Slider, TextBox, CheckButtons
 
 # Global variables.
 
 fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 euler, quaternion = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
+chkBtn, sameView = None, True
 vectorChanged, eulerLim, quaternionLim = True, None, None
 
 # Define transformations.
@@ -117,7 +118,6 @@ def initAxis(axis):
 
 def setAxisLim(axis, W, axisLim):
     # Set axis limits.
-    global vectorChanged
     if vectorChanged: # Fit limits to new data.
         norm, coef = np.linalg.norm(W), 1.1
         axis.set_xlim3d(-coef*norm, coef*norm)
@@ -237,36 +237,53 @@ def applyRz(val):
     gamma = val
     applyRotation()
 
+def onChkBtnChange(label):
+    if label == 'same view':
+        global sameView
+        sameView = chkBtn.get_status()[0]
+
+def onMove(event):
+    if sameView and event.inaxes is not None:
+        if event.inaxes == euler:
+            quaternion.view_init(euler.elev, euler.azim)
+        if event.inaxes == quaternion:
+            euler.view_init(quaternion.elev, quaternion.azim)
+
 # Main function.
 
 def main():
     # Make textbox to initialize vector to rotate.
-    axisLabelVx = fig.add_axes([0.1, 0.09, 0.3, 0.03])
+    axisLabelVx = fig.add_axes([0.1, 0.09, 0.2, 0.03])
     textboxLabelVx = TextBox(axisLabelVx, 'Vx', textalignment='center')
     textboxLabelVx.set_val("%s" % vx)
     textboxLabelVx.on_text_change(applyVx)
-    axisLabelVy = fig.add_axes([0.1, 0.06, 0.3, 0.03])
+    axisLabelVy = fig.add_axes([0.1, 0.06, 0.2, 0.03])
     textboxLabelVy = TextBox(axisLabelVy, 'Vy', textalignment='center')
     textboxLabelVy.set_val("%s" % vy)
     textboxLabelVy.on_text_change(applyVy)
-    axisLabelVz = fig.add_axes([0.1, 0.03, 0.3, 0.03])
+    axisLabelVz = fig.add_axes([0.1, 0.03, 0.2, 0.03])
     textboxLabelVz = TextBox(axisLabelVz, 'Vz', textalignment='center')
     textboxLabelVz.set_val("%s" % vz)
     textboxLabelVz.on_text_change(applyVz)
 
     # Make horizontal sliders to control the angles.
-    axisSliderRx = fig.add_axes([0.6, 0.09, 0.3, 0.05])
+    axisSliderRx = fig.add_axes([0.5, 0.09, 0.2, 0.05])
     sliderRx = Slider(ax=axisSliderRx, label='alpha (Rx) [°]',
                       valmin=-180, valmax=180, valinit=alpha, valfmt='%i', valstep=5)
     sliderRx.on_changed(applyRx)
-    axisSliderRy = fig.add_axes([0.6, 0.06, 0.3, 0.05])
+    axisSliderRy = fig.add_axes([0.5, 0.06, 0.2, 0.05])
     sliderRy = Slider(ax=axisSliderRy, label='beta (Ry) [°]',
                       valmin=-180, valmax=180, valinit=beta, valfmt='%i', valstep=5)
     sliderRy.on_changed(applyRy)
-    axisSliderRz = fig.add_axes([0.6, 0.03, 0.3, 0.05])
+    axisSliderRz = fig.add_axes([0.5, 0.03, 0.2, 0.05])
     sliderRz = Slider(ax=axisSliderRz, label='gamma (Rz) [°]',
                       valmin=-180, valmax=180, valinit=gamma, valfmt='%i', valstep=5)
     sliderRz.on_changed(applyRz)
+    global chkBtn
+    axisChkBtn = fig.add_axes([0.8, 0.03, 0.1, 0.1])
+    chkBtn = CheckButtons(axisChkBtn, ('same view',), (sameView,))
+    chkBtn.on_clicked(onChkBtnChange)
+    fig.canvas.mpl_connect('motion_notify_event', onMove)
 
     # Draw plots.
     applyRotation() # Init plots.
