@@ -11,7 +11,7 @@ from matplotlib.widgets import Slider, TextBox, CheckButtons
 fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 euler, quaternion = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
-chkBtn, sameView = None, True
+chkBtn, sameView, sameLim = None, True, True
 vectorChanged, eulerLim, quaternionLim = True, None, None
 
 # Define transformations.
@@ -118,7 +118,7 @@ def initAxis(axis):
 
 def setAxisLim(axis, W, axisLim):
     # Set axis limits.
-    if vectorChanged: # Fit limits to new data.
+    if W is not None and vectorChanged: # Fit limits to new data.
         norm, coef = np.linalg.norm(W), 1.1
         axis.set_xlim3d(-coef*norm, coef*norm)
         axis.set_ylim3d(-coef*norm, coef*norm)
@@ -144,6 +144,7 @@ def applyEulerRotation(V, angles):
     print('Euler rotation:      W = (%.3f, %.3f, %.3f), ||W|| = %.6f' % data)
 
     # Plotting.
+    global eulerLim
     eulerLim = (euler.get_xlim3d(), euler.get_ylim3d(), euler.get_zlim3d())
     initAxis(euler)
     euler.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
@@ -170,6 +171,7 @@ def applyQuaternionRotation(V, angles):
     print('Quaternion rotation: W = (%.3f, %.3f, %.3f), ||W|| = %.6f' % data)
 
     # Plotting.
+    global quaternionLim
     quaternionLim = (quaternion.get_xlim3d(), quaternion.get_ylim3d(), quaternion.get_zlim3d())
     initAxis(quaternion)
     quaternion.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
@@ -241,13 +243,32 @@ def onChkBtnChange(label):
     if label == 'same view':
         global sameView
         sameView = chkBtn.get_status()[0]
+    if label == 'same limits':
+        global sameLim
+        sameLim = chkBtn.get_status()[1]
 
 def onMove(event):
-    if sameView and event.inaxes is not None:
-        if event.inaxes == euler:
-            quaternion.view_init(euler.elev, euler.azim)
-        if event.inaxes == quaternion:
-            euler.view_init(quaternion.elev, quaternion.azim)
+    global euler, quaternion, eulerLim, quaternionLim
+    if event.inaxes is not None:
+        if sameView:
+            if event.inaxes == euler:
+                quaternion.view_init(euler.elev, euler.azim)
+            if event.inaxes == quaternion:
+                euler.view_init(quaternion.elev, quaternion.azim)
+        if sameLim:
+            if event.inaxes == euler:
+                eulerLim = (euler.get_xlim3d(),
+                            euler.get_ylim3d(),
+                            euler.get_zlim3d())
+                quaternionLim = eulerLim
+                setAxisLim(quaternion, None, quaternionLim)
+            if event.inaxes == quaternion:
+                quaternionLim = (quaternion.get_xlim3d(),
+                                 quaternion.get_ylim3d(),
+                                 quaternion.get_zlim3d())
+                eulerLim = quaternionLim
+                setAxisLim(euler, None, eulerLim)
+        plt.draw() # Update plots.
 
 # Main function.
 
@@ -281,7 +302,9 @@ def main():
     sliderRz.on_changed(applyRz)
     global chkBtn
     axisChkBtn = fig.add_axes([0.8, 0.03, 0.1, 0.1])
-    chkBtn = CheckButtons(axisChkBtn, ('same view',), (sameView,))
+    chkBtn = CheckButtons(axisChkBtn,
+                          ('same view', 'same limits'),
+                          (sameView, sameLim))
     chkBtn.on_clicked(onChkBtnChange)
     fig.canvas.mpl_connect('motion_notify_event', onMove)
 
