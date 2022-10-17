@@ -11,8 +11,8 @@ from matplotlib.widgets import Slider, TextBox, CheckButtons
 fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 eAxis, qAxis = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
-chkBtn, sameView, sameLim = None, True, True
-vChange, eLim, qLim = True, None, None
+chkBtn, sameView, sameLim, trail = None, True, True, True
+vChange, eLim, qLim, eTrail, qTrail = True, None, None, [], []
 
 # Define transformations.
 
@@ -128,6 +128,15 @@ def setAxisLim(axis, W, axisLim):
         axis.set_ylim3d(axisLim[1])
         axis.set_zlim3d(axisLim[2])
 
+def setTrail(axis, W, wTrail):
+    # Set trail.
+    if trail:
+        wTrail.append(W)
+        x = [wt[0] for wt in wTrail]
+        y = [wt[1] for wt in wTrail]
+        z = [wt[2] for wt in wTrail]
+        axis.scatter(x, y, z, color='orange')
+
 # Apply rotation.
 
 def applyEulerRotation(V, angles):
@@ -149,6 +158,7 @@ def applyEulerRotation(V, angles):
     initAxis(eAxis)
     eAxis.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
     setAxisLim(eAxis, W, eLim)
+    setTrail(eAxis, W, eTrail)
     eAxis.set_title('Euler rotation')
 
     return W
@@ -176,6 +186,7 @@ def applyQuaternionRotation(V, angles):
     initAxis(qAxis)
     qAxis.quiver(0., 0., 0., W[0], W[1], W[2], color='orange')
     setAxisLim(qAxis, W, qLim)
+    setTrail(qAxis, W, qTrail)
     qAxis.set_title('Quaternion rotation')
 
     return W
@@ -246,6 +257,12 @@ def onChkBtnChange(label):
     if label == 'same limits':
         global sameLim
         sameLim = chkBtn.get_status()[1]
+    if label == 'trail':
+        global trail, eTrail, qTrail
+        trail = chkBtn.get_status()[2]
+        if not trail:
+            eTrail, qTrail = [], [] # Reset.
+            applyRotation()
 
 def onMove(event):
     global eAxis, qAxis, eLim, qLim
@@ -299,8 +316,8 @@ def main():
     global chkBtn
     axisChkBtn = fig.add_axes([0.8, 0.03, 0.1, 0.1])
     chkBtn = CheckButtons(axisChkBtn,
-                          ('same view', 'same limits'),
-                          (sameView, sameLim))
+                          ('same view', 'same limits', 'trail'),
+                          (sameView, sameLim, trail))
     chkBtn.on_clicked(onChkBtnChange)
     fig.canvas.mpl_connect('motion_notify_event', onMove)
 
