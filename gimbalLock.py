@@ -25,6 +25,7 @@ class eulerTransform:
         Rx = np.array([[ 1.,              0.,               0.],
                        [ 0., math.cos(theta), -math.sin(theta)],
                        [ 0., math.sin(theta),  math.cos(theta)]])
+
         return Rx
 
     @staticmethod
@@ -34,6 +35,7 @@ class eulerTransform:
         Ry = np.array([[  math.cos(theta), 0., math.sin(theta)],
                        [               0., 1.,              0.],
                        [ -math.sin(theta), 0., math.cos(theta)]])
+
         return Ry
 
     @staticmethod
@@ -43,6 +45,7 @@ class eulerTransform:
         Rz = np.array([[  math.cos(theta), -math.sin(theta), 0.],
                        [  math.sin(theta),  math.cos(theta), 0.],
                        [               0.,               0., 1.]])
+
         return Rz
 
 class quaternionTransform:
