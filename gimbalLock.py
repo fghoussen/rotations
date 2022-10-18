@@ -175,9 +175,9 @@ def applyQuaternionRotation(V, angles):
     Ry = quaternionTransform(thetaY, yAxis) # Rotation y axis.
     xAxis = np.array([[1.], [0.], [0.]])
     Rx = quaternionTransform(thetaX, xAxis) # Rotation x axis.
-    P = quaternionTransform(0., V) # Pure quaternion.
-    P.rotate([Rz, Ry, Rx])
-    W = P.vector # Rotated vector.
+    p = quaternionTransform(0., V) # Pure quaternion.
+    p.rotate([Rz, Ry, Rx])
+    W = p.vector # Rotated vector.
 
     # Print.
     data = (W[0], W[1], W[2], np.linalg.norm(W))
