@@ -4,7 +4,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
-from matplotlib.widgets import Slider, TextBox, CheckButtons
+from matplotlib.widgets import Slider, TextBox, CheckButtons, RadioButtons
 
 # Global variables.
 
@@ -12,6 +12,7 @@ fig, axis = plt.subplots(1, 2, subplot_kw=dict(projection='3d'))
 eAxis, qAxis = axis
 vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
 chkBtn, sameView, sameLim, trail = None, True, True, True
+rdoBtn, rotOrder = None, 'ZYX'
 vChange, eLim, qLim, eTrail, qTrail = True, None, None, [], []
 
 # Define transformations.
@@ -142,14 +143,19 @@ def setTrail(axis, W, wTrail):
 
 # Apply rotation.
 
-def applyEulerRotation(V, angles):
+def applyEulerRotation(V, angles, rotOrder):
     # Rotate vector.
     thetaX, thetaY, thetaZ = angles
     trf = eulerTransform()
     Rz = trf.getRz(thetaZ)
     Ry = trf.getRy(thetaY)
     Rx = trf.getRx(thetaX)
-    W = Rx@Ry@Rz@V
+    W = None
+    if rotOrder == 'ZYX':
+        W = Rx@Ry@Rz@V
+    if rotOrder == 'XYZ':
+        W = Rz@Ry@Rx@V
+    assert W is not None, 'Unknow rotation order'
 
     # Print.
     data = (W[0], W[1], W[2], np.linalg.norm(W))
@@ -166,7 +172,7 @@ def applyEulerRotation(V, angles):
 
     return W
 
-def applyQuaternionRotation(V, angles):
+def applyQuaternionRotation(V, angles, rotOrder):
     # Rotate vector.
     thetaX, thetaY, thetaZ = angles
     zAxis = np.array([[0.], [0.], [1.]])
@@ -175,8 +181,14 @@ def applyQuaternionRotation(V, angles):
     Ry = quaternionTransform(thetaY, yAxis) # Rotation y axis.
     xAxis = np.array([[1.], [0.], [0.]])
     Rx = quaternionTransform(thetaX, xAxis) # Rotation x axis.
+    lsQ = None
+    if rotOrder == 'ZYX':
+        lsQ = [Rz, Ry, Rx]
+    if rotOrder == 'XYZ':
+        lsQ = [Rx, Ry, Rz]
+    assert lsQ is not None, 'Unknow rotation order'
     p = quaternionTransform(0., V) # Pure quaternion.
-    p.rotate([Rz, Ry, Rx])
+    p.rotate(lsQ)
     W = p.vector # Rotated vector.
 
     # Print.
@@ -200,8 +212,8 @@ def applyRotation():
     V = np.array([[vx], [vy], [vz]])
     data = (V[0], V[1], V[2], np.linalg.norm(V))
     print('Initial vector:      V = (%.3f, %.3f, %.3f), ||V|| = %.6f' % data)
-    eulerW = applyEulerRotation(V, angles)
-    quaternionW = applyQuaternionRotation(V, angles)
+    eulerW = applyEulerRotation(V, angles, rotOrder)
+    quaternionW = applyQuaternionRotation(V, angles, rotOrder)
     D = np.fabs(eulerW - quaternionW)
     data = (D[0], D[1], D[2], np.linalg.norm(D))
     print('Difference:          D = (%.3f, %.3f, %.3f), ||D|| = %.6f' % data)
@@ -267,6 +279,10 @@ def onChkBtnChange(label):
             eTrail, qTrail = [], [] # Reset.
             applyRotation()
 
+def onRdoBtnChange(label):
+    global rotOrder
+    rotOrder = label
+
 def onMove(event):
     global eAxis, qAxis, eLim, qLim
     if event.inaxes is not None:
@@ -304,25 +320,29 @@ def main():
     textboxLabelVz.on_text_change(applyVz)
 
     # Make horizontal sliders to control the angles.
-    axisSliderRx = fig.add_axes([0.5, 0.09, 0.2, 0.05])
+    axisSliderRx = fig.add_axes([0.4, 0.09, 0.2, 0.05])
     sliderRx = Slider(ax=axisSliderRx, label='alpha (Rx) [°]',
                       valmin=-180, valmax=180, valinit=alpha, valfmt='%i', valstep=5)
     sliderRx.on_changed(applyRx)
-    axisSliderRy = fig.add_axes([0.5, 0.06, 0.2, 0.05])
+    axisSliderRy = fig.add_axes([0.4, 0.06, 0.2, 0.05])
     sliderRy = Slider(ax=axisSliderRy, label='beta (Ry) [°]',
                       valmin=-180, valmax=180, valinit=beta, valfmt='%i', valstep=5)
     sliderRy.on_changed(applyRy)
-    axisSliderRz = fig.add_axes([0.5, 0.03, 0.2, 0.05])
+    axisSliderRz = fig.add_axes([0.4, 0.03, 0.2, 0.05])
     sliderRz = Slider(ax=axisSliderRz, label='gamma (Rz) [°]',
                       valmin=-180, valmax=180, valinit=gamma, valfmt='%i', valstep=5)
     sliderRz.on_changed(applyRz)
     global chkBtn
-    axisChkBtn = fig.add_axes([0.8, 0.03, 0.1, 0.1])
+    axisChkBtn = fig.add_axes([0.7, 0.03, 0.075, 0.1])
     chkBtn = CheckButtons(axisChkBtn,
                           ('same view', 'same limits', 'trail'),
                           (sameView, sameLim, trail))
     chkBtn.on_clicked(onChkBtnChange)
     fig.canvas.mpl_connect('motion_notify_event', onMove)
+    global rdoBtn
+    axisRdoBtn = fig.add_axes([0.8, 0.03, 0.05, 0.1])
+    rdoBtn = RadioButtons(axisRdoBtn, ('ZXY', 'XYZ'), active=0)
+    rdoBtn.on_clicked(onRdoBtnChange)
 
     # Draw plots.
     applyRotation() # Init plots.
