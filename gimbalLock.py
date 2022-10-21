@@ -150,12 +150,13 @@ def applyEulerRotation(V, angles, rotOrder):
     Rz = trf.getRz(thetaZ)
     Ry = trf.getRy(thetaY)
     Rx = trf.getRx(thetaX)
-    W = None
+    R = None
     if rotOrder == 'ZYX':
-        W = Rx@Ry@Rz@V
+        R = Rx@Ry@Rz
     if rotOrder == 'XYZ':
-        W = Rz@Ry@Rx@V
-    assert W is not None, 'Unknow rotation order'
+        R = Rz@Ry@Rx
+    assert R is not None, 'Unknow rotation order'
+    W = R@V
 
     # Print.
     data = (W[0], W[1], W[2], np.linalg.norm(W))
