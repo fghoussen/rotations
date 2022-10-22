@@ -155,7 +155,7 @@ def applyEulerRotation(V, angles, rotOrder):
         R = Rx@Ry@Rz
     if rotOrder == 'XYZ':
         R = Rz@Ry@Rx
-    assert R is not None, 'Unknow rotation order'
+    assert R is not None, 'Unknow rotation order %s' % rotOrder
     W = R@V
 
     # Print.
@@ -342,7 +342,7 @@ def main():
     fig.canvas.mpl_connect('motion_notify_event', onMove)
     global rdoBtn
     axisRdoBtn = fig.add_axes([0.8, 0.03, 0.05, 0.1])
-    rdoBtn = RadioButtons(axisRdoBtn, ('ZXY', 'XYZ'), active=0)
+    rdoBtn = RadioButtons(axisRdoBtn, ('ZYX', 'XYZ'), active=0)
     rdoBtn.on_clicked(onRdoBtnChange)
 
     # Draw plots.
