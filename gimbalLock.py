@@ -14,6 +14,7 @@ vx, vy, vz, alpha, beta, gamma = 1., 1., 0., 0, 0, 0
 chkBtn, sameView, sameLim, trail = None, True, True, True
 rdoBtn, rotOrder = None, 'ZYX'
 vChange, eLim, qLim, eTrail, qTrail = True, None, None, [], []
+gimbalX, gimbalY, gimbalZ, cx, cy, cz, gimbals = [], [], [], 'r', 'g', 'b', True
 
 # Define transformations.
 
@@ -207,6 +208,59 @@ def applyQuaternionRotation(V, angles, rotOrder):
 
     return W
 
+def initGimbals():
+    # Build gimbals on the plane frame.
+    global gimbalX, gimbalY, gimbalZ
+    u = np.array([[1.], [0.], [0.]])
+    v = np.array([[0.], [1.], [0.]])
+    w = np.array([[0.], [0.], [1.]])
+    for angle in range(-180, 180, 15):
+        theta = np.deg2rad(angle)
+        gx = math.cos(theta)*v + math.sin(theta)*w
+        gimbalX.append(gx)
+        gy = math.cos(theta)*u + math.sin(theta)*w
+        gimbalY.append(gy)
+        gz = math.cos(theta)*u + math.sin(theta)*v
+        gimbalZ.append(gz)
+    gimbalX.append(gimbalX[0])
+    gimbalY.append(gimbalY[0])
+    gimbalZ.append(gimbalZ[0])
+
+def rotateGimbals(axis, angles, rotOrder):
+    # Check if one need gimbals.
+    global gimbals
+    if not gimbals:
+        return
+
+    # Get Euler rotation matrices.
+    thetaX, thetaY, thetaZ = angles
+    trf = eulerTransform()
+    Rz = trf.getRz(thetaZ)
+    Ry = trf.getRy(thetaY)
+    Rx = trf.getRx(thetaX)
+
+    # Rotate gimbals (always using Euler rotations for simplicity).
+    rotGimbalX, rotGimbalY, rotGimbalZ = [], [], []
+    for gx, gy, gz in zip(gimbalX, gimbalY, gimbalZ):
+        if rotOrder == 'ZYX':
+            gx, gy, gz = Rz@gx, Rz@gy, Rz@gz
+            gx, gy = Ry@gx, Ry@gy
+            gx = Rx@gx
+        if rotOrder == 'XYZ':
+            gz, gy, gx = Rx@gz, Rx@gy, Rx@gx
+            gz, gy = Ry@gz, Ry@gy
+            gz = Rz@gz
+        rotGimbalX.append(gx)
+        rotGimbalY.append(gy)
+        rotGimbalZ.append(gz)
+    rotGimbals = [rotGimbalX, rotGimbalY, rotGimbalZ]
+    for gimbal, clr in zip(rotGimbals, [cx, cy, cz]):
+        gx = [float(pt[0]) for pt in gimbal]
+        gy = [float(pt[1]) for pt in gimbal]
+        gz = [float(pt[2]) for pt in gimbal]
+        axis.scatter(gx, gy, gz, c=clr)
+        axis.plot(gx, gy, gz, c=clr)
+
 def applyRotation():
     angles = (alpha, beta, gamma)
     print('Alpha %3d, Beta %3d, Gamma %3d' % angles)
@@ -219,6 +273,9 @@ def applyRotation():
     data = (D[0], D[1], D[2], np.linalg.norm(D))
     print('Difference:          D = (%.3f, %.3f, %.3f), ||D|| = %.6f' % data)
     print('')
+    rotateGimbals(eAxis, angles, rotOrder)
+    rotateGimbals(qAxis, angles, rotOrder)
+    global vChange
     vChange = False
     plt.draw() # Update plots.
 
@@ -279,6 +336,10 @@ def onChkBtnChange(label):
         if not trail:
             eTrail, qTrail = [], [] # Reset.
             applyRotation()
+    if label == 'gimbals':
+        global gimbals
+        gimbals = chkBtn.get_status()[3]
+        applyRotation()
 
 def onRdoBtnChange(label):
     global rotOrder
@@ -336,8 +397,8 @@ def main():
     global chkBtn
     axisChkBtn = fig.add_axes([0.7, 0.03, 0.075, 0.1])
     chkBtn = CheckButtons(axisChkBtn,
-                          ('same view', 'same limits', 'trail'),
-                          (sameView, sameLim, trail))
+                          ('same view', 'same limits', 'trail', 'gimbals'),
+                          (sameView, sameLim, trail, gimbals))
     chkBtn.on_clicked(onChkBtnChange)
     fig.canvas.mpl_connect('motion_notify_event', onMove)
     global rdoBtn
@@ -346,6 +407,7 @@ def main():
     rdoBtn.on_clicked(onRdoBtnChange)
 
     # Draw plots.
+    initGimbals()
     applyRotation() # Init plots.
     plt.show() # Show plots.
 
